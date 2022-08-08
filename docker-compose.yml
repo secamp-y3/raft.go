@@ -1,0 +1,84 @@
+version: "3"
+
+services:
+  dispatcher:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: go run dispatcher.go --port 8080
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.10
+  console:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    environment:
+      - DISPATCHER=172.26.249.10:8080
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.2
+  peer01:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: sh peer_runner.sh 1 172.26.249.10:8080
+    depends_on:
+      - "dispatcher"
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.21
+  peer02:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: sh peer_runner.sh 2 172.26.249.10:8080
+    depends_on:
+      - "dispatcher"
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.22
+  peer03:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: sh peer_runner.sh 3 172.26.249.10:8080
+    depends_on:
+      - "dispatcher"
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.23
+  peer04:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: sh peer_runner.sh 4 172.26.249.10:8080
+    depends_on:
+      - "dispatcher"
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.24
+  peer05:
+    build: .
+    tty: true
+    volumes:
+      - .:/go/src/app
+    command: sh peer_runner.sh 5 172.26.249.10:8080
+    depends_on:
+      - "dispatcher"
+    networks:
+      cluster:
+        ipv4_address: 172.26.249.25
+
+networks:
+  cluster:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.249.0/24
