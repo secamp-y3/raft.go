@@ -55,7 +55,7 @@ func parse(raw string) Command {
 	return ret
 }
 
-func send_rpc(peer, method string, args any, reply any) error {
+func sendRPC(peer, method string, args any, reply any) error {
 	addr, err := disp.GetAddr(peer)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (c *Command) Exec() (string, error) {
 
 func State(name string) (string, error) {
 	var reply peer.RequestStateReply
-	err := send_rpc(name, "Worker.RequestState", peer.RequestStateArgs{}, &reply)
+	err := sendRPC(name, "Worker.RequestState", peer.RequestStateArgs{}, &reply)
 	if err != nil {
 		return "", err
 	}
