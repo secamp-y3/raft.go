@@ -30,8 +30,7 @@ type Node struct {
 	worker *Worker
 	quit   chan interface{}
 
-	delay   int
-	verbose bool
+	delay int
 }
 
 type NodeOption func(*Node)
@@ -81,8 +80,8 @@ func (n *Node) Connect(name, addr string) error {
 func (n *Node) Shutdown() {
 	close(n.quit)
 	n.listener.Close()
-	for name, _ := range n.ConnectedNodes() {
-		n.Disconnect(name)
+	for name := range n.ConnectedNodes() {
+		_ = n.Disconnect(name)
 	}
 	n.worker = nil
 	n.wg.Wait()
@@ -105,7 +104,7 @@ func (n *Node) LinkWorker(w *Worker) error {
 	n.worker.LinkNode(n)
 
 	n.server = rpc.NewServer()
-	n.server.RegisterName("Worker", n.worker)
+	_ = n.server.RegisterName("Worker", n.worker)
 
 	var err error
 	n.listener, err = net.Listen("tcp", n.addr)
