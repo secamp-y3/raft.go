@@ -16,7 +16,7 @@ type ConnectedNode struct {
 }
 
 type Node struct {
-	addr  string
+	addr string
 
 	listener net.Listener
 	server   *rpc.Server
@@ -30,7 +30,7 @@ type Node struct {
 	worker *Worker
 	quit   chan interface{}
 
-	delay int
+	delay   int
 	verbose bool
 }
 
@@ -67,7 +67,7 @@ func (n *Node) Connect(name, addr string) error {
 	if n.IsConnectedTo(name) {
 		return fmt.Errorf("Peer '%s' is already reserved", name)
 	}
-    log.Printf("Connect to %s:%s", name, addr)
+	log.Printf("Connect to %s:%s", name, addr)
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	c, err := rpc.Dial("tcp", addr)
@@ -82,9 +82,9 @@ func (n *Node) Shutdown() {
 	close(n.quit)
 	n.listener.Close()
 	for name, _ := range n.ConnectedNodes() {
-	    n.Disconnect(name)
-    }
-    n.worker = nil
+		n.Disconnect(name)
+	}
+	n.worker = nil
 	n.wg.Wait()
 }
 
@@ -159,7 +159,7 @@ func (n *Node) ConnectedNodeNames() []string {
 }
 
 func (n *Node) IsConnectedTo(name string) bool {
-    _, ok := n.peers[name]
+	_, ok := n.peers[name]
 	return ok
 }
 

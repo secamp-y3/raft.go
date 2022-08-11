@@ -74,8 +74,8 @@ func (w *Worker) Connect(name, addr string) (err error) {
 }
 
 func (w *Worker) Stop() {
-    w.node.Shutdown()
-    w.node = nil
+	w.node.Shutdown()
+	w.node = nil
 }
 
 func (w *Worker) RemoteCall(name, method string, args any, reply any) error {
@@ -92,8 +92,8 @@ type RequestConnectArgs struct {
 }
 
 type RequestConnectReply struct {
-	OK bool
-	Peers    map[string]string
+	OK    bool
+	Peers map[string]string
 }
 
 func (w *Worker) RequestConnect(args RequestConnectArgs, reply *RequestConnectReply) error {
@@ -107,23 +107,23 @@ func (w *Worker) RequestConnect(args RequestConnectArgs, reply *RequestConnectRe
 	}
 	reply.OK = true
 	for name, addr := range w.node.ConnectedNodes() {
-        reply.Peers[name] = addr
+		reply.Peers[name] = addr
 	}
 	return nil
 }
 
-type RequestConnectedPeersArgs struct {}
+type RequestConnectedPeersArgs struct{}
 
 type RequestConnectedPeersReply struct {
-    Peers map[string]string
+	Peers map[string]string
 }
 
 func (w *Worker) RequestConnectedPeers(args RequestConnectedPeersArgs, reply *RequestConnectedPeersReply) error {
-    w.LockMutex()
-    defer w.UnlockMutex()
-    reply.Peers = make(map[string]string)
-    for k, v := range w.ConnectedPeers() {
-        reply.Peers[k] = v
-    }
-    return nil
+	w.LockMutex()
+	defer w.UnlockMutex()
+	reply.Peers = make(map[string]string)
+	for k, v := range w.ConnectedPeers() {
+		reply.Peers[k] = v
+	}
+	return nil
 }
