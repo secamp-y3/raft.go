@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	dispat *dispatcher.Client
+	disp *dispatcher.Client
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	var err error
-	dispat, err = dispatcher.FindDispatcher(*dispatcherFlag)
+	disp, err = dispatcher.FindDispatcher(*dispatcherFlag)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 		command := parse(input)
 		result, err := command.Exec()
 		if err != nil {
-			fmt.Printf("> [ERRPR] %s\n", err)
+			fmt.Printf("> [ERROR] %s\n", err)
 		} else {
 			fmt.Println("> ", result)
 		}
@@ -56,7 +56,7 @@ func parse(raw string) Command {
 }
 
 func send_rpc(peer, method string, args any, reply any) error {
-	addr, err := dispat.GetAddr(peer)
+	addr, err := disp.GetAddr(peer)
 	if err != nil {
 		return err
 	}

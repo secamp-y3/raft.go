@@ -20,7 +20,7 @@ func main() {
 	nameFlag := flag.String("name", host, "Worker name")
 	portFlag := flag.Int("port", 30000, "Port number")
 	delayFlag := flag.Int("delay", 0, "Communication delay")
-	dispatcherFlag := flag.String("dispatcher", "", "Dispathcer address")
+	dispatcherFlag := flag.String("dispatcher", "", "Dispatcher address")
 	flag.Parse()
 
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", host, *portFlag))
