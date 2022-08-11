@@ -10,4 +10,4 @@ fi
 
 name=$(printf 'peer%02d' "$peer")
 date=$(date '+%Y%m%d_%H:%M:%S')
-go run peer.go --name "$name" --port $((peer + 3000)) --dispatcher "$dispatcher" >log/"${name}"_"${date}".log 2>&1
+go run cmd/peer/main.go --name "$name" --port $((peer + 3000)) --dispatcher "$dispatcher" >log/"${name}"_"${date}".log 2>&1

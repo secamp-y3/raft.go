@@ -6,7 +6,7 @@ services:
     tty: true
     volumes:
       - .:/go/src/app
-    command: go run dispatcher.go --port 8080
+    command: go run cmd/dispatcher/main.go --port 8080
     networks:
       cluster:
         ipv4_address: 172.26.249.10
@@ -15,6 +15,7 @@ services:
     tty: true
     volumes:
       - .:/go/src/app
+    working_dir: /go/src/app/cmd/console
     environment:
       - DISPATCHER=172.26.249.10:8080
     networks:
