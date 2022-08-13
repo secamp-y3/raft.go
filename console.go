@@ -11,11 +11,10 @@ import (
 
 	"sc.y3/dispatcher"
 	"sc.y3/peer"
-	//"github.com/rivo/tview"
 )
 
 var (
-	dispat *dispatcher.Client
+	disp *dispatcher.Client
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	var err error
-	dispat, err = dispatcher.FindDispatcher(*dispatcherFlag)
+	disp, err = dispatcher.FindDispatcher(*dispatcherFlag)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,12 +33,12 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 		command := parse(input)
-        result, err := command.Exec()
-        if err != nil {
-            fmt.Printf("> [ERRPR] %s\n", err)
-        } else {
-            fmt.Println("> ", result)
-        }
+		result, err := command.Exec()
+		if err != nil {
+			fmt.Printf("> [ERROR] %s\n", err)
+		} else {
+			fmt.Println("> ", result)
+		}
 	}
 }
 
@@ -56,8 +55,8 @@ func parse(raw string) Command {
 	return ret
 }
 
-func send_rpc(peer, method string, args any, reply any) error {
-	addr, err := dispat.GetAddr(peer)
+func sendRPC(peer, method string, args any, reply any) error {
+	addr, err := disp.GetAddr(peer)
 	if err != nil {
 		return err
 	}
@@ -71,23 +70,23 @@ func send_rpc(peer, method string, args any, reply any) error {
 
 type Command struct {
 	operation string
-	args  []string
+	args      []string
 }
 
 func (c *Command) Exec() (string, error) {
-    switch c.operation {
-    case "state":
-        return State(c.args[0])
-    default:
-        return "", fmt.Errorf("No such command")
-    }
+	switch c.operation {
+	case "state":
+		return State(c.args[0])
+	default:
+		return "", fmt.Errorf("No such command")
+	}
 }
 
 func State(name string) (string, error) {
-    var reply peer.RequestStateReply
-    err := send_rpc(name, "Worker.RequestState", peer.RequestStateArgs{}, &reply)
-    if err != nil {
-        return "", err
-    }
-    return reply.State.String(), nil
+	var reply peer.RequestStateReply
+	err := sendRPC(name, "Worker.RequestState", peer.RequestStateArgs{}, &reply)
+	if err != nil {
+		return "", err
+	}
+	return reply.State.String(), nil
 }

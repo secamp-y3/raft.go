@@ -17,7 +17,7 @@ func StartDispatcher(addr string) error {
 	s := new(Server)
 	s.peers = make(map[string]string)
 	server := rpc.NewServer()
-	server.RegisterName("Dispatcher", s)
+	_ = server.RegisterName("Dispatcher", s)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
