@@ -21,6 +21,10 @@ func main() {
 	dispatcherFlag := flag.String("dispatcher", "localhost:8080", "Dispatcher address")
 	flag.Parse()
 
+	if *dispatcherFlag == "localhost:8080" && os.Getenv("DISPATCHER") != "" {
+		*dispatcherFlag = os.Getenv("DISPATCHER")
+	}
+
 	var err error
 	disp, err = dispatcher.FindDispatcher(*dispatcherFlag)
 	if err != nil {
