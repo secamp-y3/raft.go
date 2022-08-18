@@ -10,4 +10,6 @@ fi
 
 name=$(printf 'peer%02d' "$peer")
 date=$(date '+%Y%m%d_%H:%M:%S')
-go run cmd/peer/main.go --name "$name" --port $((peer + 3000)) --dispatcher "$dispatcher" >log/"${name}"_"${date}".log 2>&1
+cd cmd/peer &&
+  air --tmp_dir "../../../tmp" --build.bin "../../../tmp/main" --build.cmd "go build -o ../../../tmp/main ." \
+    --build.args_bin "--name $name --port $((peer + 3000)) --dispatcher $dispatcher" >../../log/"${name}"_"${date}".log 2>&1
