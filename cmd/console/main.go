@@ -17,13 +17,17 @@ var (
 	disp *dispatcher.Client
 )
 
-func main() {
-	dispatcherFlag := flag.String("dispatcher", "localhost:8080", "Dispatcher address")
-	flag.Parse()
-
-	if *dispatcherFlag == "localhost:8080" && os.Getenv("DISPATCHER") != "" {
-		*dispatcherFlag = os.Getenv("DISPATCHER")
+func getEnv(key, def string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
 	}
+
+	return def
+}
+
+func main() {
+	dispatcherFlag := flag.String("dispatcher", getEnv("DISPATCHER", "localhost:8080"), "Dispatcher address")
+	flag.Parse()
 
 	var err error
 	disp, err = dispatcher.FindDispatcher(*dispatcherFlag)
