@@ -7,12 +7,10 @@ import (
 )
 
 type Worker struct {
-	name string
-	node *Node
+	name  string
+	State WorkerState
 
 	mu sync.Mutex
-
-	State WorkerState
 }
 
 type WorkerOption func(*Worker)
