@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
+	"time"
 )
 
 type Worker struct {
 	name  string
 	State WorkerState
 
-	mu sync.Mutex
+	mu  sync.Mutex
+	rnd *rand.Rand
 }
 
 type WorkerOption func(*Worker)
@@ -18,6 +20,7 @@ type WorkerOption func(*Worker)
 func NewWorker(name string) *Worker {
 	w := new(Worker)
 	w.name = name
+	w.rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 	w.State = InitState(w)
 	return w
 }
@@ -36,10 +39,6 @@ func (w *Worker) LockMutex() {
 
 func (w *Worker) UnlockMutex() {
 	w.mu.Unlock()
-}
-
-func (w *Worker) Rand() *rand.Rand {
-	return w.node.Rand()
 }
 
 func (w *Worker) LinkNode(n *Node) {

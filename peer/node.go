@@ -58,10 +58,6 @@ func (n *Node) Addr() string {
 	return n.addr
 }
 
-func (n *Node) Rand() *rand.Rand {
-	return n.rnd
-}
-
 func (n *Node) Connect(name, addr string) error {
 	if n.IsConnectedTo(name) {
 		return fmt.Errorf("Peer '%s' is already reserved", name)
@@ -170,7 +166,7 @@ func (n *Node) call(name, method string, args any, reply any) error {
 		return fmt.Errorf("No such peer: %s", name)
 	}
 	if n.delay > 0 {
-		delay := int(n.Rand().ExpFloat64() / float64(n.delay))
+		delay := int(n.rnd.ExpFloat64() / float64(n.delay))
 		time.Sleep(time.Duration(delay) * time.Millisecond)
 	}
 	return peer.conn.Call(method, args, reply)
