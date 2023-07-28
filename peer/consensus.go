@@ -24,11 +24,10 @@ type RequestStateReply struct {
 }
 
 func (w *Worker) RequestState(args RequestStateArgs, reply *RequestStateReply) error {
-	w.LockMutex()
-	reply.State = w.State
-	w.UnlockMutex()
+	w.mu.Lock()
+	reply.State = w.state
+	w.mu.Unlock()
 
 	log.Println(reply.State.String())
-
 	return nil
 }

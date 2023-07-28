@@ -30,24 +30,32 @@ func main() {
 
 	log.Println(addr.String())
 
-	node := peer.NewNode(addr.String(), peer.Delay(*delayFlag))
+	callChan := make(chan *peer.Call)
+	connectChan := make(chan *peer.Connect)
+	worker := peer.NewWorker(callChan, connectChan)
+	node, err := peer.NewNode(*nameFlag, addr.String(), callChan, connectChan, worker, peer.Delay(*delayFlag))
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		err := node.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	dispatcher, err := dispatcher.FindDispatcher(*dispatcherFlag)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	worker := peer.NewWorker(*nameFlag)
-	if node.LinkWorker(worker) != nil {
-		log.Fatal(err)
-	}
-
-	peers, err := dispatcher.GetConnectedPeers(worker)
+	peers, err := dispatcher.GetConnectedPeers(node)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for name, addr := range peers {
-		if name != worker.Name() {
-			_ = worker.Connect(name, addr)
+		if name != node.Name() {
+			_ = node.Connect(name, addr)
 		}
 	}
 

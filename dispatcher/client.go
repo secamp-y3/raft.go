@@ -20,9 +20,9 @@ func FindDispatcher(addr string) (*Client, error) {
 	return d, nil
 }
 
-func (d *Client) GetConnectedPeers(w *peer.Worker) (map[string]string, error) {
+func (d *Client) GetConnectedPeers(n *peer.Node) (map[string]string, error) {
 	var reply RequestConnectReply
-	err := d.client.Call("Dispatcher.RequestConnect", RequestConnectArgs{w.Name(), w.Addr()}, &reply)
+	err := d.client.Call("Dispatcher.RequestConnect", RequestConnectArgs{n.Name(), n.Addr()}, &reply)
 	return reply.Peers, err
 }
 

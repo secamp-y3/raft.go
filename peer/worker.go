@@ -1,86 +1,63 @@
 package peer
 
 import (
-	"fmt"
 	"math/rand"
 	"sync"
 	"time"
 )
 
 type Worker struct {
-	name  string
-	State WorkerState
+	state WorkerState
+	peers map[string]string
 
 	mu  sync.Mutex
 	rnd *rand.Rand
+
+	callChan    chan<- *Call
+	connectChan chan<- *Connect
 }
 
 type WorkerOption func(*Worker)
 
-func NewWorker(name string) *Worker {
+func NewWorker(callChan chan<- *Call, connectChan chan<- *Connect) *Worker {
 	w := new(Worker)
-	w.name = name
+
 	w.rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
-	w.State = InitState(w)
+	w.state = InitState(w)
+	w.peers = make(map[string]string)
+	w.callChan = callChan
+	w.connectChan = connectChan
+
 	return w
 }
 
-func (w *Worker) Name() string {
-	return w.name
-}
-
-func (w *Worker) Addr() string {
-	return w.node.Addr()
-}
-
-func (w *Worker) LockMutex() {
+func (w *Worker) RegisterPeer(name string, addr string) {
 	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.peers[name] = addr
 }
 
-func (w *Worker) UnlockMutex() {
-	w.mu.Unlock()
+func (w *Worker) UnregisterPeer(name string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	delete(w.peers, name)
 }
 
-func (w *Worker) LinkNode(n *Node) {
-	w.node = n
-}
-
-func (w *Worker) Connect(name, addr string) (err error) {
-	w.LockMutex()
-	defer w.UnlockMutex()
-	err = w.node.Connect(name, addr)
-	if err != nil {
-		return err
-	}
-	var reply RequestConnectReply
-	err = w.RemoteCall(name, "Worker.RequestConnect", RequestConnectArgs{w.name, w.node.Addr()}, &reply)
-	if err != nil {
-		return err
-	} else if !reply.OK {
-		return fmt.Errorf("Connection request denied: [%s] %s", name, addr)
-	}
-	// for n, a := range reply.Peers {
-	// 	if !w.node.IsConnectedTo(n) {
-	// 		err = w.node.Connect(n, a)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	return nil
-}
-
-func (w *Worker) Stop() {
-	w.node.Shutdown()
-	w.node = nil
+type Call struct {
+	Name    string
+	Method  string
+	Args    any
+	Reply   any
+	ErrChan chan<- error
 }
 
 func (w *Worker) RemoteCall(name, method string, args any, reply any) error {
-	return w.node.call(name, method, args, reply)
-}
+	errChan := make(chan error)
+	call := &Call{name, method, args, reply, errChan}
+	w.callChan <- call
 
-func (w *Worker) ConnectedPeers() map[string]string {
-	return w.node.ConnectedNodes()
+	err := <-errChan
+	return err
 }
 
 type RequestConnectArgs struct {
@@ -89,23 +66,26 @@ type RequestConnectArgs struct {
 }
 
 type RequestConnectReply struct {
-	OK    bool
-	Peers map[string]string
+	OK bool
+}
+
+type Connect struct {
+	Name    string
+	Addr    string
+	ErrChan chan<- error
 }
 
 func (w *Worker) RequestConnect(args RequestConnectArgs, reply *RequestConnectReply) error {
 	reply.OK = false
-	reply.Peers = make(map[string]string)
-	w.LockMutex()
-	defer w.UnlockMutex()
-	err := w.node.Connect(args.Name, args.Addr)
+
+	errChan := make(chan error)
+	w.connectChan <- &Connect{args.Name, args.Addr, errChan}
+	err := <-errChan
 	if err != nil {
 		return err
 	}
+
 	reply.OK = true
-	for name, addr := range w.node.ConnectedNodes() {
-		reply.Peers[name] = addr
-	}
 	return nil
 }
 
@@ -115,12 +95,14 @@ type RequestConnectedPeersReply struct {
 	Peers map[string]string
 }
 
-func (w *Worker) RequestConnectedPeers(args RequestConnectedPeersArgs, reply *RequestConnectedPeersReply) error {
-	w.LockMutex()
-	defer w.UnlockMutex()
+func (w *Worker) RequestConnectedPeers(args *RequestConnectedPeersArgs, reply *RequestConnectedPeersReply) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	reply.Peers = make(map[string]string)
-	for k, v := range w.ConnectedPeers() {
-		reply.Peers[k] = v
+	for name, addr := range w.peers {
+		reply.Peers[name] = addr
 	}
+
 	return nil
 }
