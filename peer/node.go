@@ -87,20 +87,25 @@ func (n *Node) isConnectedTo(name string) bool {
 }
 
 func (n *Node) Connect(name, addr string) error {
-	if !n.isConnectedTo(name) {
-		log.Printf("Connect to %s:%s", name, addr)
-		n.mu.Lock()
-		defer n.mu.Unlock()
-
-		c, err := rpc.Dial("tcp", addr)
-		if err != nil {
-			return err
-		}
-
-		n.peers[name] = &connectedNode{addr, c}
-		n.worker.RegisterPeer(name, addr)
+	if n.isConnectedTo(name) {
+		return fmt.Errorf("Peer '%s' is already reserved", name)
 	}
 
+	log.Printf("Connect to %s:%s", name, addr)
+	c, err := rpc.Dial("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.peers[name] = &connectedNode{addr, c}
+	n.worker.RegisterPeer(name, addr)
+
+	return nil
+}
+
+func (n *Node) ConnectBack(name, addr string) error {
 	var reply RequestConnectReply
 	err := n.call(name, "Worker.RequestConnect", RequestConnectArgs{n.name, n.addr}, &reply)
 	if err != nil {
@@ -186,6 +191,11 @@ func (n *Node) Run() error {
 
 			case connect := <-n.connectChan:
 				err := n.Connect(connect.Name, connect.Addr)
+				if err != nil {
+					connect.ErrChan <- err
+					continue
+				}
+				err = n.ConnectBack(connect.Name, connect.Addr)
 				connect.ErrChan <- err
 			}
 		}

@@ -56,6 +56,7 @@ func main() {
 	for name, addr := range peers {
 		if name != node.Name() {
 			_ = node.Connect(name, addr)
+			_ = node.ConnectBack(name, addr)
 		}
 	}
 
