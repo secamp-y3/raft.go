@@ -114,7 +114,6 @@ func (n *Node) ConnectBack(name, addr string) error {
 		return fmt.Errorf("Connection request denied: [%s] %s", name, addr)
 	}
 
-	log.Printf("Connected to %s:%s", name, addr)
 	return nil
 }
 
