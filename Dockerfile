@@ -1,4 +1,4 @@
-FROM golang:1.18.2-alpine
+FROM golang:1.20.6-alpine
 
 RUN apk update && mkdir /go/src/app
 
