@@ -1,12 +1,10 @@
-FROM golang:1.20.6-alpine
+FROM golang:1.20.6-bookworm
 
-RUN apk update && mkdir /go/src/app
+RUN apt update && mkdir /go/src/appp
 
-# airのインストール
-RUN go install github.com/cosmtrek/air@latest && \
-  mv /go/bin/air /usr/local/bin/
+RUN go install github.com/cosmtrek/air@latest
+ENV PATH /go/bin:$PATH
 
-# モジュールをあらかじめダウンロード
 WORKDIR /go/src/app
 COPY go.* .
 RUN go mod download

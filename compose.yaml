@@ -1,84 +1,75 @@
 services:
-  dispatcher:
+  node01:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    working_dir: /go/src/app/cmd/dispatcher
-    command: air --tmp_dir "../../../tmp" --build.bin "../../../tmp/main" --build.cmd "go build -o ../../../tmp/main ." --build.args_bin "--port 8080"
+    command: go run cmd/server/main.go --name node01 --host 172.26.250.11 --port 8000
     networks:
       cluster:
-        ipv4_address: 172.26.249.10
-  console:
+        ipv4_address: 172.26.250.11
+
+  node02:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    working_dir: /go/src/app/cmd/console
-    environment:
-      - DISPATCHER=172.26.249.10:8080
-    networks:
-      cluster:
-        ipv4_address: 172.26.249.2
-  peer01:
-    build: .
-    tty: true
-    volumes:
-      - .:/go/src/app
-    command: sh peer_runner.sh 1 172.26.249.10:8080
+    command: go run cmd/server/main.go --name node02 --host 172.26.250.12 --port 8000 --server 172.26.250.11:8000
     depends_on:
-      - "dispatcher"
+      - "node01"
     networks:
       cluster:
-        ipv4_address: 172.26.249.21
-  peer02:
+        ipv4_address: 172.26.250.12
+
+  node03:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    command: sh peer_runner.sh 2 172.26.249.10:8080
+    command: go run cmd/server/main.go --name node03 --host 172.26.250.13 --port 8000 --server 172.26.250.11:8000
     depends_on:
-      - "dispatcher"
+      - "node01"
     networks:
       cluster:
-        ipv4_address: 172.26.249.22
-  peer03:
+        ipv4_address: 172.26.250.13
+
+  node04:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    command: sh peer_runner.sh 3 172.26.249.10:8080
+    command: go run cmd/server/main.go --name node04 --host 172.26.250.14 --port 8000 --server 172.26.250.11:8000
     depends_on:
-      - "dispatcher"
+      - "node01"
     networks:
       cluster:
-        ipv4_address: 172.26.249.23
-  peer04:
+        ipv4_address: 172.26.250.14
+
+  node05:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    command: sh peer_runner.sh 4 172.26.249.10:8080
+    command: go run cmd/server/main.go --name node05 --host 172.26.250.15 --port 8000 --server 172.26.250.11:8000
     depends_on:
-      - "dispatcher"
+      - "node01"
     networks:
       cluster:
-        ipv4_address: 172.26.249.24
-  peer05:
+        ipv4_address: 172.26.250.15
+
+  client:
     build: .
     tty: true
     volumes:
       - .:/go/src/app
-    command: sh peer_runner.sh 5 172.26.249.10:8080
-    depends_on:
-      - "dispatcher"
+    working_dir: /go/src/app/cmd/client
     networks:
       cluster:
-        ipv4_address: 172.26.249.25
+        ipv4_address: 172.26.250.2
 
 networks:
   cluster:
     ipam:
       driver: default
       config:
-        - subnet: 172.26.249.0/24
+        - subnet: 172.26.250.0/24
