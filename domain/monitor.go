@@ -41,6 +41,6 @@ func (r *FetchStateReply) String() string {
 		}
 	}
 	sb.WriteString("]")
-    return sb.String()
+	return sb.String()
 	// return fmt.Sprintf("%s: %v", r.NodeInfo, r.Members)
 }
