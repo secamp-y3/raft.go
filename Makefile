@@ -6,6 +6,6 @@ up:
 down:
 	docker compose down
 
-.PHONY: console
+.PHONY: client
 console:
-	@docker compose exec console go run main.go
+	@docker compose exec client go run main.go
