@@ -52,7 +52,7 @@ func (c *DelayedChannel) Dest() Addr {
 
 func (c *DelayedChannel) Call(method string, args, reply any) error {
 	if c.delay > 0 {
-		time.Sleep(time.Millisecond)
+		time.Sleep(time.Duration(c.delay * float64(time.Millisecond)))
 	}
 	return NewReliableChannel(c.Dest()).Call(method, args, reply)
 }

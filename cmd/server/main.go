@@ -24,7 +24,7 @@ func main() {
 
 	initiatorAddr := pflag.StringP("server", "s", "", "Server address to join P2P network")
 
-	meanDelay := pflag.Float64P("delay", "d", 0, "Mean delay of communication channel")
+    meanDelay := pflag.Float64P("delay", "d", 0, "Mean delay of communication channel (Unit: ms)")
 	lossRate := pflag.Float64P("loss", "l", 0, "Loss rate of communication channel")
 	seed := pflag.Int64P("seed", "", 0, "Random seed")
 
