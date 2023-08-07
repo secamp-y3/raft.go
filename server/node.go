@@ -81,12 +81,21 @@ func NewNode(name, host, port string, opts ...NodeOption) (*Node, error) {
 	return node, nil
 }
 
+// Self returns the name and endpoint address of the node
 func (n *Node) Self() NodeInfo {
 	return n.NodeInfo
 }
 
+// Network gives a pointer to cluster manager
+//
+// Use `(*Node).Channels()` to send RPC to other nodes in the cluster.
 func (n *Node) Network() *Cluster {
 	return n.network
+}
+
+// Random gives a pointer to the pseudo ranndom generator owned by the node
+func (n *Node) Random() *rand.Rand {
+	return n.rng
 }
 
 // Channels returns a list of communication channels to cluster members
