@@ -33,6 +33,24 @@ func FetchState(args []string) (string, error) {
 	return reply.String(), nil
 }
 
+func AppendLogs(args []string) (string, error) {
+	if len(args) < 2 {
+		return "", fmt.Errorf("Target server address or log entry is not given")
+	}
+
+	var reply domain.AppendLogsReply
+	logArgs := args[1:]
+	var log []domain.Log = make([]domain.Log, len(logArgs))
+	for i, v := range logArgs {
+		log[i] = domain.Log(v)
+	}
+	if err := sendRPC(args[0], "StateMachine.AppendLogs", domain.AppendLogsArgs{Entries: log}, &reply); err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%d", reply), nil
+}
+
 // Handler represents callback functions for command
 type Handler func(args []string) (string, error)
 
@@ -83,6 +101,7 @@ func main() {
 
 	app := App{handlers: HandlerMap{}}
 	app.Register("state", FetchState)
+	app.Register("appendLogs", AppendLogs)
 
 	if *osc != "" {
 		command := ParseCommand(*osc)
