@@ -1,15 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"math/rand"
 	"net/rpc"
 	"os"
-	"time"
 
 	"github.com/secamp-y3/raft.go/domain"
-	"github.com/secamp-y3/raft.go/heartbeat"
 	"github.com/secamp-y3/raft.go/server"
 	"github.com/spf13/pflag"
 )
@@ -40,55 +36,7 @@ func main() {
 	}
 
 	heartbeatWatch := make(chan int)
-
 	stateMachine := domain.StateMachine{Node: node, Log: []domain.Log{}, HeartbeatWatch: heartbeatWatch, Term: 0, Role: "follower"}
-
-	// HeartBeat
-	hb := &heartbeat.HeartBeat{Node: node}
-	// go hb.HeartBeat(&stateMachine)
-
-	go func() {
-		for {
-			seed := time.Now().UnixNano()
-			r := rand.New(rand.NewSource(seed))
-			val := r.Intn(1000) + 2000
-			select {
-			case v := <-heartbeatWatch:
-				if v == 1 {
-					log.Println("Heartbeat is working")
-				} else {
-					log.Println("Heartbeat is not working(heartbeatWatch)")
-				}
-			case <-time.After(time.Duration(val) * time.Millisecond):
-				if stateMachine.Role == "leader" {
-					continue
-				}
-				log.Println("Timeout")
-				log.Println("Heartbeat is not working")
-				channels := node.Channels()
-				voteGrantedCnt := 0
-				stateMachine.Term++
-				stateMachine.Role = "candidate"
-				for _, c := range channels {
-					requestVoteReply := domain.RequestVoteReply{}
-					err := c.Call("StateMachine.RequestVote", domain.RequestVoteArgs{Term: stateMachine.Term, Leader: stateMachine.Node.Name}, &requestVoteReply)
-					if err != nil {
-						fmt.Printf("RequestVote Error: %v\n", err)
-						break
-					}
-					if requestVoteReply.VoteGranted {
-						voteGrantedCnt++
-					}
-				}
-				if voteGrantedCnt >= len(channels)/2 {
-					stateMachine.Role = "leader"
-					stateMachine.Leader = stateMachine.Node.Name
-				}
-				go hb.HeartBeat(&stateMachine)
-				fmt.Printf("Timeout process succeed: Term: %d, Role: %s, Leader: %s\n", stateMachine.Term, stateMachine.Role, stateMachine.Leader)
-			}
-		}
-	}()
 
 	svr := rpc.NewServer()
 	svr.RegisterName("Monitor", &domain.Monitor{Node: node})
@@ -100,6 +48,17 @@ func main() {
 	if *initiatorAddr != "" {
 		if err := node.EstablishConnection(server.Addr(*initiatorAddr)); err != nil {
 			log.Fatal(err)
+		}
+	}
+
+	for {
+		switch stateMachine.Role {
+		case "follower":
+			stateMachine.ExecFollower(heartbeatWatch)
+		case "candidate":
+			stateMachine.ExecCandidate()
+		case "leader":
+			stateMachine.ExecLeader()
 		}
 	}
 }
