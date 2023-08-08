@@ -62,7 +62,7 @@ func main() {
 
 	svr := rpc.NewServer()
 	svr.RegisterName("Monitor", &domain.Monitor{Node: node})
-	svr.RegisterName("StateMachine", &domain.StateMachine{Node: node, Log: []domain.Log{}, HeartbeatWatch: heartbeatWatch})
+	svr.RegisterName("StateMachine", &domain.StateMachine{Node: node, Log: []domain.Log{}, HeartbeatWatch: heartbeatWatch, Term: 0})
 
 	shutdown := node.Serve(svr)
 	defer shutdown()
