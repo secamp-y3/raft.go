@@ -9,8 +9,9 @@ import (
 type Log string
 
 type StateMachine struct {
-	Node *server.Node
-	Log  []Log
+	Node           *server.Node
+	Log            []Log
+	HeartbeatWatch chan int
 }
 
 type AppendLogsArgs struct {
@@ -37,6 +38,9 @@ func (s *StateMachine) AppendLogs(input AppendLogsArgs, reply *AppendLogsReply) 
 }
 
 func (s *StateMachine) AppendEntries(input AppendEntriesArgs, reply *AppendEntriesReply) error {
+	if s.Node.Name != "node01" {
+		s.HeartbeatWatch <- 1
+	}
 	s.Log = append(s.Log, input.Log...)
 	fmt.Printf("Log: %v\n", s.Log)
 	return nil

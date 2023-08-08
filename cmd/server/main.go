@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/rpc"
 	"os"
+	"time"
 
 	"github.com/secamp-y3/raft.go/domain"
 	"github.com/secamp-y3/raft.go/heartbeat"
@@ -42,9 +43,26 @@ func main() {
 		go hb.HeartBeat()
 	}
 
+	heartbeatWatch := make(chan int)
+
+	go func() {
+		for {
+			select {
+			case v := <-heartbeatWatch:
+				if v == 1 {
+					log.Println("Heartbeat is working")
+				} else {
+					log.Println("Heartbeat is not working")
+				}
+			case <-time.After(2 * time.Second):
+				log.Println("Heartbeat is not working")
+			}
+		}
+	}()
+
 	svr := rpc.NewServer()
 	svr.RegisterName("Monitor", &domain.Monitor{Node: node})
-	svr.RegisterName("StateMachine", &domain.StateMachine{Node: node, Log: []domain.Log{}})
+	svr.RegisterName("StateMachine", &domain.StateMachine{Node: node, Log: []domain.Log{}, HeartbeatWatch: heartbeatWatch})
 
 	shutdown := node.Serve(svr)
 	defer shutdown()
