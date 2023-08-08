@@ -13,6 +13,8 @@ type StateMachine struct {
 	Log            []Log
 	HeartbeatWatch chan int
 	Term           int
+	Leader         string
+	Role           string
 }
 
 type AppendLogsArgs struct {
@@ -27,6 +29,15 @@ type AppendEntriesArgs struct {
 }
 
 type AppendEntriesReply struct{}
+
+type RequestVoteArgs struct {
+	Term   int
+	Leader string
+}
+
+type RequestVoteReply struct {
+	VoteGranted bool
+}
 
 func (s *StateMachine) AppendLogs(input AppendLogsArgs, reply *AppendLogsReply) error {
 	s.Log = append(s.Log, input.Entries...)
@@ -43,10 +54,24 @@ func (s *StateMachine) AppendEntries(input AppendEntriesArgs, reply *AppendEntri
 	if input.Term < s.Term {
 		return nil
 	}
-	if s.Node.Name != "node01" {
-		s.HeartbeatWatch <- 1
-	}
+	s.Term = input.Term
+	s.Role = "follower"
+	s.HeartbeatWatch <- 1
 	s.Log = append(s.Log, input.Log...)
 	fmt.Printf("Log: %v\n", s.Log)
+	return nil
+}
+
+func (s *StateMachine) RequestVote(input RequestVoteArgs, reply *RequestVoteReply) error {
+	fmt.Println("RequestVote Start")
+	if input.Term <= s.Term {
+		fmt.Printf("RequestVote failed. InputTerm: %d, Term: %d\n", input.Term, s.Term)
+		return nil
+	}
+	s.Term = input.Term
+	s.Leader = input.Leader
+	s.Role = "follower"
+	reply.VoteGranted = true
+	fmt.Printf("RequestVote succeed Term: %d, Role: %s, Leader: %s\n", s.Term, s.Role, s.Leader)
 	return nil
 }
