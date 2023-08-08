@@ -12,6 +12,7 @@ type StateMachine struct {
 	Node           *server.Node
 	Log            []Log
 	HeartbeatWatch chan int
+	Term           int
 }
 
 type AppendLogsArgs struct {
@@ -21,7 +22,8 @@ type AppendLogsArgs struct {
 type AppendLogsReply int
 
 type AppendEntriesArgs struct {
-	Log []Log
+	Log  []Log
+	Term int
 }
 
 type AppendEntriesReply struct{}
@@ -38,6 +40,9 @@ func (s *StateMachine) AppendLogs(input AppendLogsArgs, reply *AppendLogsReply) 
 }
 
 func (s *StateMachine) AppendEntries(input AppendEntriesArgs, reply *AppendEntriesReply) error {
+	if input.Term < s.Term {
+		return nil
+	}
 	if s.Node.Name != "node01" {
 		s.HeartbeatWatch <- 1
 	}
