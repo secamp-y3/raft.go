@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/secamp-y3/raft.go/domain"
+	"github.com/secamp-y3/raft.go/heartbeat"
 	"github.com/secamp-y3/raft.go/server"
 	"github.com/spf13/pflag"
 )
@@ -33,6 +34,12 @@ func main() {
 	node, err := server.NewNode(*name, *host, *port, server.MeanDelay(*meanDelay), server.LossRate(*lossRate), server.Seed(*seed))
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// HeartBeat
+	if *name == "node01" {
+		hb := &heartbeat.HeartBeat{Node: node}
+		go hb.HeartBeat()
 	}
 
 	svr := rpc.NewServer()

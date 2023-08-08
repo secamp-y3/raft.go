@@ -23,13 +23,13 @@ type AppendEntriesArgs struct {
 	Log []Log
 }
 
-type AppendEntriesReply int
+type AppendEntriesReply struct{}
 
 func (s *StateMachine) AppendLogs(input AppendLogsArgs, reply *AppendLogsReply) error {
 	s.Log = append(s.Log, input.Entries...)
 	channel := s.Node.Channels()
 	for _, c := range channel {
-		var appendEntriesReply *AppendEntriesReply
+		appendEntriesReply := &AppendEntriesReply{}
 		c.Call("StateMachine.AppendEntries", AppendEntriesArgs{Log: input.Entries}, appendEntriesReply)
 	}
 	fmt.Printf("Log: %v\n", s.Log)
