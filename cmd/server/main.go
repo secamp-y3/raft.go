@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	heartbeatWatch := make(chan int)
+	heartbeatWatch := make(chan int, 100)
 	stateMachine := domain.StateMachine{Node: node, Log: []domain.Log{}, HeartbeatWatch: heartbeatWatch, Term: 0, Role: "follower"}
 
 	svr := rpc.NewServer()
