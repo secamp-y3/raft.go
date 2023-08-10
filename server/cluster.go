@@ -66,7 +66,7 @@ func (c *Cluster) Remove(name string) (Addr, bool) {
 		}
 		return -1
 	}()
-	if idx > 0 {
+	if idx >= 0 {
 		addr := c.members[idx].Endpoint
 		c.members[idx] = c.members[len(c.members)-1]
 		c.members = c.members[:len(c.members)-1]
