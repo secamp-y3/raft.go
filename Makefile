@@ -7,5 +7,5 @@ down:
 	docker compose down
 
 .PHONY: client
-client:
+console:
 	@docker compose exec client go run main.go
